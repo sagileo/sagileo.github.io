@@ -1,0 +1,2265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZWTD5V0L2H"></script>
+<script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+
+        gtag('config', 'G-ZWTD5V0L2H');
+    </script>
+<meta charset="UTF-8">
+<meta name="description" content="Diffusion Self-Guidance for Controllable Image Generation">
+
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+<title>Diffusion Self-Guidance for Controllable Image Generation</title>
+<meta name="title" content="Diffusion Self-Guidance for Controllable Image Generation">
+<meta name="description" content="Self-guidance is a method for controllable image generation that guides sampling using the attention and activations of a pretrained diffusion model.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dave.ml/selfguidance/">
+<meta property="og:title" content="Diffusion Self-Guidance for Controllable Image Generation">
+<meta property="og:description" content="Self-guidance is a method for controllable image generation that guides sampling using the attention and activations of a pretrained diffusion model.">
+<meta property="og:image" content="https://dave.ml/selfguidance/static/preview_img.jpg">
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://dave.ml/selfguidance/">
+<meta property="twitter:title" content="Diffusion Self-Guidance for Controllable Image Generation">
+<meta property="twitter:description" content="Self-guidance is a method for controllable image generation that guides sampling using the attention and activations of a pretrained diffusion model.">
+<meta property="twitter:image" content="https://dave.ml/selfguidance/static/preview_img.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+
+
+
+
+
+<link rel="apple-touch-icon" sizes="180x180" href="static/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="static/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="static/favicon-16x16.png">
+<link rel="manifest" href="static/site.webmanifest">
+<link rel="mask-icon" href="static/safari-pinned-tab.svg" color="#ffd013">
+<meta name="msapplication-TileColor" content="#ffc40d">
+<meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="/fonts.css">
+
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.10/clipboard.min.js"></script>
+
+
+
+
+<link rel="preload" as="image" href="static/512/teaser/croissantorig.jpg">
+<link rel="preload" as="image" href="static/512/teaser/croissantmove2.jpg">
+<link rel="preload" as="image" href="static/512/teaser/croissantbig2%20(1).jpg">
+<link rel="preload" as="image" href="static/512/teaser/guavas.jpg">
+<link rel="preload" as="image" href="static/512/teaser/croissantrestyled.jpg">
+<link rel="preload" as="image" href="static/512/teaser/croissantnewstyle.jpg">
+<link rel="preload" as="image" href="static/512/teaser/croissantstylesrc.jpg">
+<link rel="preload" as="image" href="static/512/teaser/croissantnewlayout.jpg">
+<link rel="preload" as="image" href="static/512/teaser/croissantlaysrc.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donutorig.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donutmove.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donutsmall.jpg">
+<link rel="preload" as="image" href="static/512/teaser/restyle3original.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donutrestyle3.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donut_stylesrc.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donutrowhouse.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donutstylesrc.jpg">
+<link rel="preload" as="image" href="static/512/teaser/donutnewlayout4.jpg">
+
+<style>
+        b {
+            font-weight: 600;
+        }
+        code .arrow {
+            font-weight: 400;
+            font-size: 1.5em;
+            margin-left: -3px;
+    position: relative;
+    top: 3px;
+        }
+        .subcaptions code {
+            font-size: 0.95em;
+            margin-left: -2px;
+            /*padding: 0 2px;*/
+        }
+        .select_prompt {
+            /*margin-top: .75em !important;*/
+            line-height: 2em;
+            /*margin-bottom: .75em !important;*/
+        }
+
+        .select_prompt > div {
+            display: inline;
+            /*white-space: nowrap;*/
+            transition: color, background-color, transform 0.2s;
+        }
+
+        .select_prompt > div:hover {
+            /*transform: scale(1.2);*/
+        }
+
+        .select_prompt code {
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            padding: 0.2em 0.5em;
+            position: relative;
+            cursor: pointer;
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+            --img-bgc: #333;
+            transition: all 0.3s;
+            --img-txc: #fff;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .select_prompt code:hover em {
+            text-decoration: underline;
+        }
+        .select_prompt code:hover {
+            font-weight: bold;
+            /*transform: scale(1.2);*/
+        }
+
+        .orig,.move,.resize,.replace,.newlayout,.newstyle{
+            transition: opacity 0.2s;
+        }
+
+        .select_prompt div:nth-child(even) code {
+            /*background-color: #f7f7f7;*/
+            /*color: #fff;*/
+        }
+
+        .select_prompt div:not(:last-child) {
+            margin-right: 5px;
+        }
+
+        .select_prompt code.selected {
+            background-color: var(--img-bgc) !important;
+            color: var(--img-txc) !important;
+            font-weight: bold;
+            /*transform: scale(1.1);*/
+        }
+
+        .curly-brace {
+            width: 100%;
+            position: absolute;
+            /*left: 50%;*/
+            /*margin-left: -150px;*/
+            /*top: 150px;*/
+        }
+
+        .brace {
+            border-bottom: 3px solid #999;
+            margin: 0 10%;
+            width: 30%;
+            height: 15px;
+            float: left;
+        }
+
+        a.hoverteaser {
+            cursor: pointer;
+        }
+
+
+        .carousel-control-next, .carousel-control-prev {
+            width: inherit !important;
+        }
+
+        .carousel-control-prev {
+            left: -2rem;
+        }
+
+        .carousel-control-next {
+            right: -2rem;
+        }
+
+        .brace:before,
+        .brace:after {
+            content: "";
+            width: 10%;
+            height: 50px;
+            position: absolute;
+            display: block;
+        }
+
+        .brace.right:before {
+            border-bottom: 3px solid #999;
+            border-bottom-left-radius: 12px;
+            margin-left: -10%;
+            margin-top: -35px;
+        }
+
+        .brace.right:after {
+            border-top: 3px solid #999;
+            border-top-right-radius: 12px;
+            margin-left: 30%;
+            margin-top: 12px;
+        }
+
+        .brace.left:before {
+            border-top: 3px solid #999;
+            border-top-left-radius: 12px;
+            margin-left: -10%;
+            margin-top: 12px;
+        }
+
+        .brace.left:after {
+            border-bottom: 3px solid #999;
+            border-bottom-right-radius: 12px;
+            margin-left: 30%;
+            margin-top: -35px;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 1,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 48;
+            display: none !important;
+        }
+
+
+        /*@font-face {*/
+        /*    font-family: 'Code';*/
+        /*    src: url('/fonts/IBMPlexMono-Light.ttf');*/
+        /*}*/
+
+        .tooltip-inner {
+            font-family: 'Maison Mono', sans-serif !important;
+            font-size: 0.9em;
+        }
+
+
+        h3 span i, h5 span i {
+            order: -1;
+        }
+
+        body {
+            position: relative;
+        }
+
+        .squareimg::after {
+            content: "";
+            display: block;
+            padding-bottom: 100%;
+        }
+
+        .squareimg img {
+            position: absolute !important;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .subcaptions {
+            text-align: center;
+            line-height: 1.5em;
+            font-size: 0.86em;
+            /*font-weight: bold;*/
+            /*margin-top: .5em;*/
+        }
+
+        html, body {
+            /*font-family: 'Patron', sans-serif !important;*/
+            font-family: 'Patron', sans-serif !important;
+            font-weight: 200;
+
+            /*letter-spacing: -0.01em;*/
+            font-size: 15px;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            color: #1f1f1f;
+            line-height: 1.6em;
+            background-color: #ffffff;
+
+            /*     background-color: #1f1e1d;*/
+            /*color: #d7c0af;*/
+            /*font-family: sans-serif;*/
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        #results img, .teaser img {
+            transition: all .2s;
+            transition-property: transform;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .teaser .insetwrap {
+            transition: all .2s;
+            transition-property: transform;
+            position: relative;
+            /*cursor: pointer;*/
+        }
+
+        .teaser .insetwrap img.inset {
+
+            /*.teaser .insetwrap:hover img.inset:not(.hidden)+img:not(.inset)  {*/
+            width: 40%;
+            bottom: 0;
+            right: 0;
+            border: 1px solid #333;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .teaser .insetwrap img.inset.insettop {
+
+            /*.teaser .insetwrap:hover img.inset:not(.hidden)+img:not(.inset)  {*/
+            width: 40%;
+            top: 0;
+            right: 0;
+            border: 1px solid #333;
+            position: absolute;
+            z-index: 1;
+        }
+
+        /*.teaser .insetwrap:hover img.inset {*/
+        /*    width: 100%;*/
+        /*    z-index: 0;*/
+        /*    position: relative;*/
+        /*    border: none;*/
+        /*}*/
+
+
+        header {
+            text-align: center;
+        }
+
+        a {
+            /*color: #2032ac !important;*/
+            color: #4e62df !important;
+            text-decoration: none;
+            /*color: rgb(44,56,129) !important;*/
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            /*color: #184477 !important;*/
+            /*font-weight: 700;*/
+            color: #2032ac !important;
+        }
+
+        /* Heart beat animation */
+
+
+        /*  .heart:hover div * {
+              color: #B33951 !important;
+              cursor: initial !important;
+          }*/
+
+        .authors {
+            display: flex;
+            justify-content: center;
+            max-width: 860px;
+            flex-wrap: wrap;
+            margin: 0 auto;
+            font-size: 1.1em;
+        }
+
+        .autoplaytoggle {
+            margin: -1rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+
+        .autoplaytoggle button {
+            align-items: center;
+        }
+
+        .autoplaytoggle span.material-symbols-rounded {
+
+            font-size: 1.25rem !important;
+        }
+
+        .insts {
+            display: flex;
+            justify-content: center;
+        }
+
+        header h1 {
+            margin-bottom: 0;
+            font-weight: 700;
+        }
+
+        /*.carousel-item img {
+            max-width: 100%;
+        }*/
+
+        .insts {
+            font-size: 0.9em;
+        }
+
+        .linkscontainer {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+
+        .links {
+            /*font-size: 5rem;*/
+            /*margin: 0 -20px;*/
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .links a span.material-symbols-rounded {
+            max-width: 25px;
+        }
+
+        span.material-symbols-rounded {
+            max-width: 25px;
+        }
+
+        .rainbow {
+            font-size: 1.2em;
+        }
+
+        .links a {
+            font-weight: 500;
+            display: inline-flex;
+            /*flex-direction: column;*/
+            align-items: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            padding: 4px 9px;
+            /*color: #f3f3f3 !important;*/
+            /*color: #fff !important;*/
+            font-family: 'Maison Mono', sans-serif !important;
+            /*font-weight: 600;*/
+            /*margin: 0 10px;*/
+            /*font-size: 1.5em;*/
+            /*font-weight: 600;*/
+            transition: transform .2s;
+            color: var(--btn-bgc) !important;
+            background-color: #222;
+        }
+
+        .paper_link {
+            transition: transform .2s;
+            font-size: 0.9rem !important;
+        }
+
+        .links a:hover, .paper_link:hover {
+            transform: scale(1.2);
+            /*color: #fff !important;*/
+        }
+
+        .links a:active {
+            transform: scale(1.3);
+        }
+
+        .links a:nth-child(1) {
+            --btn-bgc: #ff66cf;
+        }
+
+
+        .links a:nth-child(2) {
+            /*--btn-bgc: 248,233,36;*/
+            --btn-bgc: #ff6700;
+        }
+
+        .links a:nth-child(3) {
+            --btn-bgc: #f7ff00;
+        }
+
+        .links a:nth-child(4) {
+            --btn-bgc: #a6fd29;
+        }
+
+        .links a:nth-child(5) {
+            --btn-bgc: #55ffe1;
+        }
+
+         .links a:nth-child(6) {
+            --btn-bgc: #c358ff;
+        }
+
+
+        .links a span.material-symbols-rounded {
+            margin-right: .25rem;
+        }
+
+        .links a:not(:last-child) {
+            /*margin-right: 20px;*/
+        }
+
+
+        .links .material-symbols-rounded {
+            font-size: .95em;
+        }
+
+
+        .links i {
+            font-size: 28px;
+        }
+
+        .fig {
+            width: 100%;
+            display: block;
+            padding: 0 10px;
+            margin: 0 auto;
+        }
+
+        img.arch {
+            max-width: 500px;
+        }
+
+        img.blobs {
+            max-width: 350px;
+        }
+
+        .teaser {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .teaser + section {
+            margin-top: 1rem;
+        }
+
+        .teaser video {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        img.teaser {
+            max-width: 90%;
+        }
+
+        .abstract-imgs .col {
+            display: flex;
+            align-items: center;
+        }
+
+        .videowrapper {
+            float: none;
+            clear: both;
+            width: 100%;
+            position: relative;
+            padding-bottom: 56.25%;
+            padding-top: 25px;
+            height: 0;
+        }
+
+        .wrapwrap {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .videowrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .abstract-capt {
+            font-size: 0.8rem;
+            display: block !important;
+            text-align: center;
+        }
+
+        .latex {
+            display: inline;
+            font-family: 'Math', monospace;
+            font-style: italic;
+        }
+
+        p {
+            margin: 0 !important;
+        }
+
+        .bs-tooltip-end {
+            margin-left: 3px !important;
+        }
+
+        /*section {*/
+        /*    margin: 2rem 0 !important;*/
+        /*}*/
+
+        section h5 {
+            margin: 2rem 0 0.75rem 0 !important;
+        }
+
+        .iconbutton {
+            padding: 0.1rem 0.3rem;
+            display: flex;
+            border: none !important;
+            /*background-color: #54276F !important;*/
+            color: #c358ff !important;
+            background-color: #222 !important;
+            font-size: 0.9rem;
+            /*color: #fff !important;*/
+            font-family: 'Maison Mono', sans-serif !important;
+            font-weight: 500;
+            text-decoration: none !important;
+        }
+
+        .iconbutton span.material-symbols-rounded {
+            font-size: 1.5rem;
+            /* font-weight: 700; */
+        }
+
+        .playpause span.material-symbols-rounded {
+            font-variation-settings: 'wght' 700;
+
+
+        }
+
+        .iconbutton span.material-symbols-rounded:hover {
+            color: #fafafa !important;
+        }
+
+        /* .iconbutton:hover, .iconbutton:focus {
+             background-color: hsl(259 79% 41% / 1) !important;
+             !*#3a1b4b !important;*!
+             border-color: none !important;
+             color: #fff !important;
+         }*/
+
+        .iconbutton:hover {
+            color: #c358ff !important;
+
+        }
+
+        .iconbutton:active {
+            /*background-color: #09090B !important;*/
+
+        }
+
+        [data-clipboard-target] {
+            cursor: pointer;
+        }
+
+        [data-clipboard-target]:hover {
+            color: #2032ac !important;
+        }
+
+        /* .emptyrooms {
+             max-width: 80%;
+         }*/
+
+        .emptyrooms {
+            display: flex;
+            /*justify-content: center;*/
+            align-items: flex-start;
+            background-color: #eeeeee;
+        }
+
+        .playpause {
+            flex-shrink: 0;
+        }
+
+        .emptyrooms img:first-child {
+            width: 16.196944%;
+            margin-right: 0.6%;
+        }
+
+        .emptyrooms img:last-child {
+            width: 82.8862479%;
+        }
+
+
+        section h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        section h5, section h3 {
+            justify-content: space-between;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        h3, h5 {
+            scroll-margin-top: 25px;
+            /*display: inline-block;*/
+        }
+
+        .carousel-item {
+            /*width: inherit;*/
+
+        }
+
+        .carousel-item .row {
+            margin: 0;
+        }
+
+        /*.carousel-item.row.active {
+            display: flex;
+        }
+*/
+        h3[data-exclude-link], h5[data-exclude-link] {
+            cursor: initial;
+        }
+
+        h3 span, h5 span {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        h3 span:hover, h5 span:hover {
+
+            color: #2032ac !important;
+        }
+
+        /*
+                h3[data-exclude-link]:hover, h5[data-exclude-link]:hover {
+                    color: initial !important;
+                }*/
+        code {
+            font-family: 'Maison Mono', monospace;
+            font-size: 0.9rem;
+
+            word-wrap: normal;
+            padding: 0 3px;
+            /*position: relative;*/
+            /*bottom: 1px;*/
+            /*color: #3f3f3f;*/
+            /*color: rgb(255,154,0);*/
+            color: #999;
+        }
+
+        .mono {
+            font-family: 'Maison Mono', monospace;
+            font-size: 0.8rem;
+
+            word-wrap: normal;
+        }
+
+        .prompt {
+            text-align: center;
+            line-height: 1.1em;
+            margin-bottom: 0.3em;
+        }
+
+        code em, .mono em {
+            font-style: normal;
+            /*text-decoration: underline;*/
+            font-weight: 600;
+            /*top: -0.5px;*/
+            position: relative;
+        }
+
+        .selected em {
+            text-decoration: underline;
+        }
+
+        /*.carousel {
+            margin: 1rem 0;
+        }*/
+
+        .ltx {
+            vertical-align: baseline;
+            /*height: 0.52em;*/
+        }
+
+        .cit {
+            background-color: rgba(26, 26, 26, 0.05);
+            color: #666;
+            padding: 10px;
+            letter-spacing: 0;
+            border-radius: 5px;
+            font-size: 11px;
+            display: inline-block;
+            max-width: 600px;
+            line-height: 17px;
+            margin: 0 auto;
+            overflow-y: hidden;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            white-space: -moz-pre-wrap;
+            white-space: -pre-wrap;
+            white-space: -o-pre-wrap;
+            word-wrap: break-word;
+            /*font-family: 'Code', monospace;*/
+            font-family: 'Maison Mono', monospace;
+
+        }
+
+        .cit_cont {
+            display: flex;
+        }
+
+        .video-container {
+            position: relative;
+        }
+
+        /* .video-container .video-border {
+             position: absolute;
+             width: 100%;
+             height: 100%;
+             top: 0;
+             left: 0;
+             box-shadow: inset 0px 0px 0px 6px #eeeeee;
+         }*/
+
+        .video-container video {
+            width: 100%;
+            display: block;
+            clip-path: inset(5px 5px);
+        }
+
+        .video-container img {
+            width: 100%;
+        }
+
+        .splide > * {
+            font-weight: 500;
+            position: initial;
+        }
+
+        .splide__arrow {
+            position: initial;
+            background: none;
+            /*opacity: 1;*/
+            -webkit-transform: none;
+            -moz-transform: none;
+            -ms-transform: none;
+            -o-transform: none;
+            transform: none;
+            font-size: 1.25rem;
+            justify-content: end;
+            width: 1.5em;
+        }
+
+        .splide__arrow--prev {
+            justify-content: left;
+        }
+
+        .splide__slide {
+            height: 0;
+        }
+
+        .splide__slide.is-visible {
+            height: auto;
+        }
+
+        .move-cont {
+            display: flex;
+        }
+
+        .move-cont > video {
+            max-width: 100%;
+        }
+
+        .splide__pagination__page.is-active {
+            background: #000;
+        }
+
+        .splide__pagination__page {
+            -webkit-transition: all 0.3s;
+            -moz-transition: all 0.3s;
+            -ms-transition: all 0.3s;
+            -o-transition: all 0.3s;
+            transition: all 0.3s;
+        }
+
+        .splide__pagination {
+            margin-top: 0.25rem;
+        }
+
+        .splide__pagination__page:hover {
+            background: #aaa;
+            transform: scale(1.2);
+        }
+
+        .splide__track_and_arrows {
+            display: flex;
+        }
+
+        .splide__arrows {
+            display: flex;
+            align-items: center;
+        }
+
+        .styletransfer {
+            display: grid;
+            grid-row-gap: .5rem;
+            grid-template-columns: 1fr 20px 1fr 1fr 1fr 20px 1fr 1fr 1fr;
+        }
+
+        .inversion {
+            display: grid;
+            /*grid-row-gap: .5rem;*/
+            /*grid-template-columns: 1fr 20px 1fr 1fr 1fr 20px 1fr 1fr 1fr;*/
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+        }
+
+        .styletransfer img {
+            max-width: 100%;
+            clip-path: inset(2px 2px);
+        }
+
+        .inversion span {
+            text-align: center;
+        }
+
+        .inversion img {
+            max-width: 100%;
+            clip-path: inset(2px 2px);
+        }
+
+
+        #inversion ~ .splide img {
+            max-width: 100%;
+            padding: 0.3rem;
+        }
+
+        .styletransfer span {
+            text-align: center;
+        }
+
+        .styletransfer span:nth-child(2) {
+            grid-column-start: 3;
+            grid-column-end: 6;
+        }
+
+        .styletransfer span:nth-child(3) {
+            grid-column-start: 7;
+            grid-column-end: 10;
+        }
+
+        @media (max-width: 399px) {
+            .subcaptions {
+                /*font-size: 0.7em;*/
+            }
+
+        }
+
+        @media (min-width: 992px) {
+            .col-lg-222 {
+                flex: 0 0 auto;
+                width: 22.222222%;
+            }
+            .container {
+                max-width: 1400px;
+            }
+
+            .container section {
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            section.teaser {
+                max-width: 1200px;
+            }
+            .teaser .tldr {
+                /*max-width: 900px;*/
+                /*margin: 0 auto;*/
+            }
+            .container section p, h3, h5 {
+                max-width: 900px;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                /*display: block;*/
+            }
+
+            /* #overviewfig {
+                 max-width: 800px !important;
+                 margin: 0 auto !important;
+             }*/
+        }
+
+        .inversion_subheader {
+            font-weight: bold;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .inversion_subheader:not(:first-of-type) {
+            margin-top: 0.2rem;
+        }
+
+        .inversion_subheader + .splide {
+            margin: 0.2rem 0 !important;
+        }
+
+        /*
+                .move-cont .video-container:nth-child(8), .move-cont .video-container:nth-child(7) {
+                    display: none;
+                }*/
+
+        @media (max-width: 991px) {
+            /*
+                        .move-cont .video-container:nth-child(5), .move-cont .video-container:nth-child(6) {
+                            display: none;
+                        }*/
+            .move-cont > video {
+                max-width: 150%;
+                clip-path: inset(0 33.333333% 0 0);
+            }
+
+            header h3 {
+                font-size: 1.5rem;
+            }
+
+            .cit {
+                /*font-size: 12px !important;*/
+            }
+
+            .emptyrooms img:last-child {
+                width: 99.6% !important;
+            }
+
+            .emptyrooms img:first-child {
+                width: 19.46% !important;
+                margin-right: 0.7522% !important;
+            }
+
+            .styletransfer {
+                display: grid;
+                grid-template-columns: 1fr 15px 1fr 1fr 15px 1fr 1fr !important;
+            }
+
+            .styletransfer img:nth-child(9n+3), .styletransfer img:nth-child(9n-1) {
+                display: none;
+            }
+
+            .styletransfer span:nth-child(2) {
+                grid-column-start: 3;
+                grid-column-end: 5;
+            }
+
+            .styletransfer span:nth-child(3) {
+                grid-column-start: 6;
+                grid-column-end: 8;
+            }
+        }
+
+        .author {
+            padding: 0 0.6rem;
+        }
+
+        @media (max-width: 767px) {
+
+            /*.teaser .insetwrap:hover img.inset:not(.hidden)+img:not(.inset)  {*/
+            /*    width: 33%;*/
+            /*    bottom: 0;*/
+            /*    right: 0;*/
+            /*    border: 1px solid #333;*/
+            /*    position: absolute;*/
+            /*    z-index: 1;*/
+            /*}*/
+            /*.teaser .insetwrap:hover img.inset {*/
+            /*    width: 100%;*/
+            /*    z-index: 0;*/
+            /*    position: relative;*/
+            /*    border: none;*/
+            /*}*/
+            .prompt {
+                margin-bottom: 0.5em;
+            }
+
+            html, body {
+
+                font-size: 14px;
+            }
+
+            code {
+                font-size: 0.9rem;
+            }
+
+            .author {
+                /*font-size: 18px;*/
+            }
+
+            .insts {
+                /*font-size: 15px;*/
+            }
+
+            /*.move-cont .video-container:nth-child(4) {
+                display: none;
+            }*/
+            .move-cont > video {
+                max-width: 200%;
+                clip-path: inset(0 50% 0 0);
+            }
+
+            .inversion *:nth-child(5n+2) {
+                display: none;
+            }
+
+            .inversion {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
+
+            .emptyrooms img:last-child {
+                width: 124.477307% !important;
+            }
+
+            .emptyrooms img:first-child {
+                width: 24.3243243% !important;
+                margin-right: 0.9% !important;
+            }
+
+            .styletransfer {
+                display: grid;
+                grid-template-columns: 1fr 10px 1fr 10px 1fr !important;
+            }
+
+            .styletransfer img:nth-child(9n+2), .styletransfer img:nth-child(9n-2) {
+                display: none;
+            }
+
+            .styletransfer span:nth-child(2) {
+                grid-column-start: 3;
+                grid-column-end: 4;
+            }
+
+            .styletransfer span:nth-child(3) {
+                grid-column-start: 5;
+                grid-column-end: 6;
+            }
+
+            .subcaptions{
+                font-size: 0.9em !important;
+            }
+        }
+
+        @media (max-width: 540px) {
+            .links a span.material-symbols-rounded {
+                max-width: 20px;
+            }
+
+            .links {
+                gap: 12px;
+            }
+
+            .prompt {
+                margin-bottom: 0.7em;
+            }
+        }
+
+        @media (max-width: 420px) {
+
+            .subcaptions {
+                /*font-size: 0.65em !important;*/
+            }
+        }
+
+        @media (max-width: 395px) {
+
+            .subcaptions {
+                /*font-size: 0.6em !important;*/
+            }
+        }
+
+        @media (max-width: 510px) {
+            /*
+                        .move-cont .video-container:nth-child(3) {
+                            display: none;
+                        }*/
+            .move-cont > video {
+                max-width: 300%;
+                clip-path: inset(0 66.6666666% 0 0);
+            }
+
+            .subcaptions {
+                /*font-size: 0.7em;*/
+            }
+
+            .inversion {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .inversion span:nth-child(n+4) {
+                grid-row: 3;
+            }
+
+            .links .material-symbols-rounded {
+                /*display: none;*/
+                font-size: 1rem;
+            }
+
+            .links a span.material-symbols-rounded {
+                max-width: 18px;
+            }
+
+        }
+
+        @media (max-width: 399px) {
+            html, body {
+                font-size: 16px !important;
+            }
+        }
+
+        @media (max-width: 380px) {
+            /*.links .material-symbols-rounded {*/
+            /*    display: none;*/
+            /*    padding: 5px 10px;*/
+            /*    !*font-size: 1rem;*!*/
+            /*}*/
+
+        }
+
+        @media (max-width: 575px) {
+
+            img.blobs {
+                max-width: 300px;
+            }
+
+            html, body {
+                font-size: 15px;
+            }
+
+            .emptyrooms img:last-child {
+                width: 165.941536% !important;
+            }
+
+            .emptyrooms img:first-child {
+                width: 32.4269205% !important;
+                margin-right: 1.15% !important;
+            }
+
+        }
+
+        @media (min-width: 768px) and (max-width: 991px) {
+             .container, .container-md, .container-sm {
+                max-width: none;
+            }
+            .container > *, .container-md > *, .container-sm > *,  .container section p, h3, h5 {
+                max-width: calc(720px - var(--bs-gutter-x));
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            section.teaser {
+                max-width: calc(100vw - 45px);
+            }
+            .subcaptions {
+                font-size: 0.83em;
+            }
+        }
+
+                @media (min-width: 576px) and (max-width: 767px) {
+             .container, .container-md, .container-sm {
+                max-width: none;
+            }
+            .container > *, .container-md > *, .container-sm > *,  .container section p, h3, h5 {
+                max-width: calc(540px - var(--bs-gutter-x));
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            section.teaser {
+                max-width: calc(100vw - 35px);
+            }
+
+        }
+
+        @media (min-width: 768px) {
+
+            .col-md-222 {
+                flex: 0 0 auto;
+                width: 22.222222%;
+            }
+            .abstract-imgs .col-md-7 {
+                border-right: 1px solid #1f1e1d;
+            }
+
+            img.arch, img.blobs {
+                max-width: 600px;
+            }
+
+            #results img.zoom {
+                transform: scale(1.71);
+                z-index: 2;
+            }
+
+            #compositional_gen img.zoom, .teaser *:not(.insetwrap) > img.zoom, .teaser .insetwrap.zoom, #non_objects_container img.zoom, #limitations_container img.zoom {
+                      transform: scale(3);
+                z-index: 2;
+            }
+
+
+        }
+
+
+        @media (max-width: 900px) and (min-width: 768px), (max-width: 1190px) and (min-width: 992px) {
+
+
+   .newlayout .insetwrap, #compositional_gen .row:not(.subcaptions) div:nth-last-child(4) img, #non_objects_container .row.d-md-flex div:last-child img, #limitations_container .row.d-md-flex div:last-child img  {
+                /*transform:scale(3) translate(-33.333333%,0) !important;*/
+       transform-origin: center right;
+            }
+            .orig > img, #compositional_gen .row .prompt+div img, #non_objects_container .row.d-md-flex div:first-child img, #limitations_container .row.d-md-flex div:first-child img  {
+                /*transform:scale(3) translate(33.333333%,0) !important;*/
+                transform-origin: center left;
+            }
+        }
+
+    </style>
+</head>
+<body class="h-100 d-flex flex-column">
+<main class="container flex-grow-1" style>
+<header class="py-3">
+
+
+<h2 class="mt-1 mt-sm-3 mt-md-3" style="font-weight: 900">Diffusion Self-Guidance for Controllable Image
+Generation</h2>
+
+<div class="authors mt-3">
+<div class="author"><a href="https://dave.ml">Dave Epstein</a><sup>1,2</sup></div>
+<div class="author"><a href="https://ajabri.github.io/">Allan Jabri</a><sup>1</sup></div>
+<div class="author"><a href="https://poolio.github.io/">Ben Poole</a><sup>2</sup></div>
+<div class="author"><a href="https://people.eecs.berkeley.edu/~efros/">Alexei A. Efros</a><sup>1</sup>
+</div>
+<div class="author"><a href="https://holynski.org/">Aleksander Hołyński</a><sup>1,2</sup></div>
+</div>
+<div class="insts mt-1">
+<div class="inst pe-3"><sup>1</sup>UC Berkeley</div>
+<div class="inst"><sup>2</sup>Google Research</div>
+</div>
+<div class="insts mt-1">
+NeurIPS 2023
+</div>
+
+
+
+
+
+
+<div class="linkscontainer">
+<div class="links mt-4">
+<a href="https://arxiv.org/abs/2306.00986" target="_blank">Paper</a>
+<a href="https://colab.research.google.com/drive/1SEM1R9mI9cF-aFpqg3NqHP8gN8irHuJi?usp=sharing">Demo</a>
+
+<a href="#results">Results</a>
+
+<a href="#citation">Cite</a>
+<a href="static/selfguidance.pdf" target="_blank">
+PDF
+</a>
+</div>
+</div>
+</header>
+<section class="teaser mt-md-2 mt-3 mb-4 mb-md-0">
+
+
+
+
+
+
+
+<div class="px-4 px-sm-3 px-md-1 mt-3 d-block d-md-none">
+<div class="carousel carousel-dark slide" data-bs-ride="carousel" id="carouselExampleControls" data-bs-touch="false" data-bs-interval="30000">
+<div class="carousel-inner">
+<div class="carousel-item ">
+<div class="row">
+<div class="col-12 gx-3 prompt"><code>“a meatball and a donut falling from the
+clouds onto a neighborhood”</code></div>
+<div class="col-4 col-md gx-3 orig"><img src="static/512/teaser/donutorig.jpg" alt>
+</div>
+<div class="col-4 col-md gx-3 move"><img src="static/512/teaser/donutmove.jpg" alt>
+</div>
+<div class="col-4 col-md gx-3 resize"><img src="static/512/teaser/donutsmall.jpg" alt>
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none orig">Original</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none move">Move <code>donut</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none resize">Resize <code>donut</code></div>
+<div class="col-4 col-md gx-3 replace">
+<div class="insetwrap">
+<img src="static/512/teaser/restyle3original.jpg" alt class="inset">
+<img src="static/512/teaser/donutrestyle3.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newstyle">
+<div class="insetwrap">
+<img src="static/512/teaser/donut_stylesrc.jpg" alt class="inset">
+<img src="static/512/teaser/donutrowhouse.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newlayout">
+<div class="insetwrap">
+<img src="static/512/teaser/donutstylesrc.jpg" alt class="inset">
+<img src="static/512/teaser/donutnewlayout4.jpg" alt>
+</div>
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none replace">Replace <code>donut</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newstyle">Copy scene appearance
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newlayout">Copy scene layout
+</div>
+</div>
+</div>
+<div class="carousel-item active">
+<div class="row">
+<div class="col-12 gx-3 prompt"><code>“a macaron and a croissant in the
+seine with the eiffel tower visible”</code></div>
+<div class="col-4 col-md gx-3 orig"><img src="static/512/teaser/croissantorig.jpg" alt>
+</div>
+<div class="col-4 col-md gx-3 move"><img src="static/512/teaser/croissantmove2.jpg" alt>
+</div>
+<div class="col-4 col-md gx-3 resize"><img src="static/512/teaser/croissantbig2%20(1).jpg" alt>
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none orig">Original</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none move">Swap objects</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none resize">Enlarge <code>macaron</code></div>
+<div class="col-4 col-md gx-3 replace">
+<div class="insetwrap">
+<img src="static/512/teaser/guavas.jpg" alt class="inset insettop">
+<img src="static/512/teaser/croissantrestyled.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newstyle">
+<div class="insetwrap">
+<img src="static/512/teaser/croissantstylesrc.jpg" alt class="inset insettop">
+<img src="static/512/teaser/croissantnewstyle.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newlayout">
+<div class="insetwrap">
+<img src="static/512/teaser/croissantlaysrc.jpg" alt class="inset insettop">
+<img src="static/512/teaser/croissantnewlayout.jpg" alt>
+</div>
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none replace">Replace <code>macaron</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newstyle">Copy scene appearance
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newlayout">Copy scene layout
+</div>
+</div>
+</div>
+</div>
+<button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+<span class="visually-hidden">Previous</span>
+</button>
+<button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+<span class="carousel-control-next-icon" aria-hidden="true"></span>
+<span class="visually-hidden">Next</span>
+</button>
+</div>
+</div>
+<div class="row px-1 mt-4 mt-md-3  d-none d-md-flex">
+<div class="col-12 gx-3 prompt"><code>“a giant macaron and a croissant in the seine with
+the eiffel tower visible”</code></div>
+<div class="col-4 col-md gx-3 orig"><img src="static/512/teaser/croissantorig.jpg" alt></div>
+<div class="col-4 col-md gx-3 move"><img src="static/512/teaser/croissantmove2.jpg" alt></div>
+<div class="col-4 col-md gx-3 resize"><img src="static/512/teaser/croissantbig2%20(1).jpg" alt></div>
+<div class="col-4 subcaptions col-md orig gx-3 mt-1 mb-2 d-block d-md-none">Original</div>
+<div class="col-4 subcaptions col-md move gx-3 mt-1 mb-2 d-block d-md-none">Move <code>donut</code></div>
+<div class="col-4 subcaptions col-md resize gx-3 mt-1 mb-2 d-block d-md-none">Shrink <code>donut</code></div>
+<div class="col-4 col-md gx-3 replace">
+<div class="insetwrap">
+<img src="static/512/teaser/guavas.jpg" alt class="inset insettop">
+<img src="static/512/teaser/croissantrestyled.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newstyle">
+<div class="insetwrap">
+<img src="static/512/teaser/croissantstylesrc.jpg" alt class="inset insettop">
+<img src="static/512/teaser/croissantnewstyle.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newlayout">
+<div class="insetwrap">
+<img src="static/512/teaser/croissantlaysrc.jpg" alt class="inset insettop">
+<img src="static/512/teaser/croissantnewlayout.jpg" alt>
+</div>
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none replace">Replace <code>donut</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newstyle"> Copy scene appearance</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newlayout">Copy scene layout</div>
+</div>
+<div class="row subcaptions px-1 mt-2 d-none d-md-flex">
+<div class="col gx-3 orig">Original</div>
+<div class="col gx-3 move">Swap objects</div>
+<div class="col gx-3 resize">Enlarge <code>macaron</code></div>
+<div class="col gx-3 replace">Replace <code>macaron</code></div>
+<div class="col gx-3 newstyle">Copy scene appearance</div>
+<div class="col gx-3 newlayout">Copy scene layout</div>
+
+</div>
+<div class="row px-1 mt-3 d-none d-md-flex">
+<div class="col-12 gx-3 prompt"><code>“a meatball and a donut falling from the clouds onto a
+neighborhood”</code></div>
+<div class="col-4 col-md gx-3 orig"><img src="static/512/teaser/donutorig.jpg" alt></div>
+<div class="col-4 col-md gx-3 move"><img src="static/512/teaser/donutmove.jpg" alt></div>
+<div class="col-4 col-md gx-3 resize"><img src="static/512/teaser/donutsmall.jpg" alt></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none orig">Original</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none move">Move</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none resize">Resize</div>
+<div class="col-4 col-md gx-3 replace">
+<div class="insetwrap">
+<img src="static/512/teaser/restyle3original.jpg" alt class="inset">
+<img src="static/512/teaser/donutrestyle3.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newstyle">
+<div class="insetwrap">
+<img src="static/512/teaser/donut_stylesrc.jpg" alt class="inset">
+<img src="static/512/teaser/donutrowhouse.jpg" alt>
+</div>
+</div>
+<div class="col-4 col-md gx-3 newlayout">
+<div class="insetwrap">
+<img src="static/512/teaser/donutstylesrc.jpg" alt class="inset">
+<img src="static/512/teaser/donutnewlayout4.jpg" alt>
+</div>
+</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none replace">Restyle</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newstyle"> Copy appearance</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none newlayout">Copy layout</div>
+</div>
+<div class="row subcaptions px-1 mt-2 d-none d-md-flex">
+<div class="col gx-3 orig">Original</div>
+<div class="col gx-3 move">Move <code>donut</code></div>
+<div class="col gx-3 resize">Shrink <code>donut</code></div>
+<div class="col gx-3 replace">Replace <code>donut</code></div>
+<div class="col gx-3 newstyle">Copy scene appearance</div>
+<div class="col gx-3 newlayout">Copy scene layout</div>
+
+</div>
+<div class="row mt-3 pt-1 tldr" style="text-align: left">
+<div class="col-12">
+<p class="pb-1 mb-2"> <b>TL;DR: </b>Self-guidance is a method for controllable image generation that guides sampling using only the attention and activations of a pretrained diffusion model.</p>
+<p class>
+Without any extra models or training, you can <a class="hoverteaser" data-for="move">move</a> or <a class="hoverteaser" data-for="resize">resize</a> objects, or even <a class="hoverteaser" data-for="replace">replace</a>
+them with items from real images, without changing the rest of the scene.
+You can also <a class="hoverteaser" data-for="newstyle">borrow the appearance</a> of another
+image
+or <a class="hoverteaser" data-for="newlayout">rearrange scenes</a> into a desired layout.
+
+</p>
+
+</div>
+</div>
+</section>
+
+<section class="abstract">
+<h3 class="pt-0 pt-md-0 mt-5 mt-sm-5 mt-md-5 mb-2" data-exclude-link="true">
+<div style="display: inline-flex;
+    align-items: center;">
+<div class="me-2 material-symbols-rounded">
+draw_abstract
+</div>
+Abstract
+</div>
+</h3>
+<p class>
+Large-scale generative models are capable of producing high-quality images from detailed text descriptions.
+However, many aspects of an image are difficult or impossible to convey through text. We introduce
+self-guidance, a method that provides greater control over generated images by guiding the
+internal representations of diffusion models. We demonstrate that properties such as the shape, location,
+and appearance of objects can be extracted from these representations and used to steer sampling.
+</p>
+<p>
+<img class="my-4 d-block d-md-none" src="static/figs_fontfixed_sm.jpg" id="overviewfigsm" alt style="max-width:100%">
+<img class="my-4 d-none d-md-block" src="static/figs_fontfixed.jpg" id="overviewfig" alt style="max-width:100%">
+</p>
+<p>
+Self-guidance works similarly to classifier guidance, but uses signals present in the pretrained
+model itself, requiring no additional models or training. We show how a simple set of properties can be
+composed to perform challenging image manipulations, such as modifying the position or size of objects,
+merging the appearance of objects in one image with the layout of another, composing objects from many
+images into one, and more. We also show that self-guidance can be used to edit real images.
+</p>
+</section>
+<section id="results">
+<h3 class="mt-5 mt-sm-4 mt-md-5 mb-2"><span class="me-2 material-symbols-rounded">
+palette
+</span>Results</h3>
+<h5 class="mt-3" id="move_resize_objects"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Move and resize objects</h5>
+<p>Using self-guidance to only change the properties of one object, we can move or resize that object without
+modifying the rest of the image. Pick a prompt and an edit and explore for yourself.</p>
+<div class="select_prompt my-3" data-for="move_resize_img" data-prefix="static/512/01/" data-order="0">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">prompt:</b>
+<div><code class="selected" data-val="raccoon" style="--img-bgc: rgb(106,63,34); --img-txc: rgb(232,189,77);">“a <em>raccoon
+in a
+barrel</em> going
+down a waterfall</em>”</code></div>
+<div>
+<code data-val="sunset" style="--img-bgc: rgb(255,87,52); --img-txc: rgb(255,238,52);">“distant
+shot of the
+tokyo tower with a <em>massive sun</em> in the sky”</code>
+</div>
+<div>
+<code data-val="catcheese" style="--img-bgc: rgb(35,59,114); --img-txc: rgb(232,217,112);">“a fluffy cat
+sitting on a museum bench
+looking at an <em>oil painting of cheese</em>”</code></div>
+</div>
+<div class="select_prompt my-3" data-for="move_resize_img" data-suffix=".jpg" data-order="1">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">edit:</b>
+<div><code data-val="up" class="selected">move <span class="arrow">↑</span></code></div>
+<div><code data-val="down">move <span class="arrow">↓</span></code></div>
+<div><code data-val="left">move <span class="arrow">←</span></code></div>
+<div><code data-val="right">move <span class="arrow">&#8594;</span></code></div>
+<div><code data-val="small">shrink</code></div>
+<div><code data-val="big">enlarge</code></div>
+</div>
+
+<div class="row px-1 mt-4">
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3"><img id="move_resize_img_orig" src="static/512/01/raccoonoriginal.jpg" alt></div>
+<div class="col gx-3"><img id="move_resize_img" src="static/512/01/raccoonup.jpg" alt></div>
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+
+
+
+
+
+</div>
+<div class="row px-1 mt-2" style="            text-align: center;">
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3">Original</div>
+<div class="col gx-3">Edited</div>
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+</div>
+
+<h5 id="appearance_transfer"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Appearance transfer from real images</h5>
+<p> By guiding the appearance of a generated object to match that of one in a real image, we can create scenes
+depicting an object from real life, similarly to <a href="https://dreambooth.github.io/">DreamBooth</a>, but
+<span style="font-weight:500">without any
+fine-tuning and only using one image</span>.
+
+</p>
+<div class="select_prompt my-3" data-for="appxfer" data-show="chowchow" data-show="teapot" data-prefix="static/512/07/" data-order="0">
+
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">prompt:</b>
+<div><code data-val="chowchow" class="selected" style="--img-bgc: rgb(157,95,53); --img-txc: rgb(255,248,224);">“a photo of a chow chow wearing a
+... outfit”</code></div>
+<div><code data-val="teapot" style="--img-bgc: rgb(100,71,119); --img-txc: rgb(141,187,147);">“a DSLR photo
+of a teapot...”</code></div>
+</div>
+<div class="select_prompt my-3" data-for="appxfer" data-suffix=".jpg" data-order="1" data-show="chowchow" data-hide="teapot">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">edit:</b>
+<div><code data-val="wizard" style="--img-bgc: rgb(113,73,126); --img-txc: rgb(232,238,238);" data-shw="chowchow" data-hde="teapot" class="selected">“purple wizard”</code></div>
+<div><code data-val="chef" style="--img-bgc: rgb(116,55,48); --img-txc: rgb(232,238,238);" data-sow="chowchow" data-hde="teapot">“chef”</code></div>
+<div><code data-val="superman" style="--img-bgc: rgb(40,78,162); --img-txc: rgb(255,27,25);" data-sow="chowcow" data-hid="teapot">“superman”</code></div>
+</div>
+<div class="select_prompt my-3" data-for="appxfer" data-suffix=".jpg" data-order="1" data-hide="chowchow" style="display: none" data-show="teapot">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">edit:</b>
+<div><code data-val="milk" style="--img-bgc: rgb(165,176,165); --img-txc: rgb(90,56,47);" data-hie="chowchow" data-shw="teapot">“floating in
+milk”</code></div>
+<div><code data-val="pour" style="--img-bgc: rgb(179,127,120); --img-txc: rgb(47,41,29);" data-hde="chowchow" data-shw="teapot">“pouring tea”</code>
+</div>
+<div><code data-val="sea" style="--img-bgc: rgb(51,64,87); --img-txc: rgb(245,234,218);" data-hie="chowchow" data-sow="teapot">“floating in the
+sea”</code></div>
+</div>
+<div class="row px-1 mt-4">
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3"><img id="appxfer_orig" src="static/512/07/chowchoworiginal.jpg" alt></div>
+<div class="col gx-3"><img id="appxfer" src="static/512/07/chowchowwizard.jpg" alt></div>
+<div class="col gx-3"><img id="appxfer_origdreambooth" src="static/512/07/dreamboothwizard.jpg" alt>
+</div>
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+
+
+
+
+
+</div>
+<div class="row px-1 mt-2" style="            text-align: center;">
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3">Real image</div>
+<div class="col gx-3">Ours</div>
+<div class="col gx-3">DreamBooth</div>
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+</div>
+<h5 id="real_image_editing"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Real image editing</h5>
+<p> Our method also enables the spatial manipulation of objects in <span style="font-weight: 500">real</span> images.</p>
+<div class="select_prompt my-3" data-for="realimg" data-prefix="static/512/08/" data-order="0">
+
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">prompt:</b>
+<div class="test">
+<code data-val="eclair" class="selected" style="--img-bgc: rgb(75,22,11); --img-txc: rgb(236,142,59);">“an
+<em>eclair</em> and a shot of espresso”</code>
+<code data-val="hotdog" class style="--img-bgc: rgb(160,50,40); --img-txc: rgb(220,190,73);">“a hot
+dog, fries, and a <em>soda</em> on a solid background”</code>
+</div>
+</div>
+<div class="select_prompt my-3" data-for="realimg" data-suffix=".jpg" data-order="1" data-show="eclair" data-hide="hotdog">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">edit:</b>
+<div><code data-val="small" class="selected">shrink width</code></div>
+<div><code data-val="reconstr">reconstruct</code></div>
+<div><code data-val="move3">move</code></div>
+<div><code data-val="big">enlarge</code></div>
+<div><code data-val="restyle">restyle</code></div>
+
+</div>
+<div class="select_prompt my-3" data-for="realimg" data-suffix=".jpg" data-order="1" data-show="hotdog" data-hide="eclair" style="display: none">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">edit:</b>
+<div><code data-val="big2" class="selected">make narrow and tall</code></div>
+<div><code data-val="bluesoda">restyle</code></div>
+<div><code data-val="small">shrink width</code></div>
+<div><code data-val="reconstr2">reconstruct</code></div>
+<div><code data-val="swapped3">swap soda and fries</code></div>
+
+
+</div>
+
+<div class="row px-1 mt-4">
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3"><img id="realimg_orig" src="static/512/08/eclairoriginal.jpg" alt></div>
+<div class="col gx-3"><img id="realimg" src="static/512/08/eclairsmall.jpg" alt></div>
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+
+
+
+
+
+</div>
+<div class="row px-1 mt-2" style="            text-align: center;">
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3">Original</div>
+<div class="col gx-3">Edited</div>
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+</div>
+<h5 id="new_appearances"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Sample new appearances</h5>
+<p>By guiding object shapes toward reconstruction of an image's layout, we can sample new appearances for a
+given scene. We compare to <a href="https://github.com/lllyasviel/ControlNet">ControlNet
+v1.1-Depth</a>
+and
+<a href="https://prompt-to-prompt.github.io/">Prompt-to-Prompt</a>.
+
+Switch between the different styles below.
+</p>
+<div class="select_prompt my-3" data-for="restyle" data-prefix="static/512/02/" data-order="0">
+
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">prompt:</b>
+<div><code data-val="bear" class="selected" style="--img-bgc: rgb(198,233,236); --img-txc: rgb(238,29,179);">“a
+bear wearing a suit eating his birthday cake out of the fridge in a dark kitchen”</code></div>
+<div><code data-val="parrot" style="--img-bgc: rgb(190,60,30); --img-txc: rgb(255,243,26);">“a parrot riding
+a
+horse down a city street”</code></div>
+</div>
+<div class="select_prompt my-3" data-for="restyle" data-suffix=".jpg" data-order="1">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">edit:</b>
+<div><code data-val="newapp2" class="selected">appearance 1</code></div>
+<div><code data-val="newapp0">appearance 2</code></div>
+<div><code data-val="newapp1">appearance 3</code></div>
+<div><code data-val="_controlnet">controlnet</code></div>
+<div><code data-val="_p2p">prompt-to-prompt</code></div>
+</div>
+<div class="row px-1 mt-4">
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3"><img id="restyle_orig" src="static/512/02/bearoriginal.jpg" alt></div>
+<div class="col gx-3"><img id="restyle" src="static/512/02/bearnewapp2.jpg" alt></div>
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+
+
+
+
+
+</div>
+<div class="row px-1 mt-2" style="            text-align: center;">
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3">Original</div>
+<div class="col gx-3">Edited</div>
+<div class="col-lg-222 col-md-222 col-sm-0 col-0 gx-3"></div>
+</div>
+
+<h5 id="mix_and_match"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Mix-and-match</h5>
+<p>By guiding samples to take object shapes from one image and appearance from another, we can rearrange images
+into layouts from other scenes.
+We can also sample new layouts of a scene by only guiding appearance. Find your favorite combination
+below.</p>
+<div class="select_prompt my-3" data-for="mixmatch" data-suffix=".jpg">
+
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">appearance:</b>
+
+<div><code style="--img-bgc: rgb(70,20,27); --img-txc: rgb(255,0,147);" data-val="A0" class="selected">#1</code></div>
+<div><code style="--img-bgc: rgb(213,183,142); --img-txc: rgb(140,40,139);" data-val="A1" class>#2</code></div>
+<div><code data-val="A2" style="--img-bgc: rgb(14,73,49); --img-txc: rgb(255,87,65);" class>#3</code></div>
+<div><code style="--img-bgc: rgb(61,43,42); --img-txc: rgb(234,224,67
+       );" data-val="A3" class>#4</code></div>
+</div>
+<div class="select_prompt my-3" data-for="mixmatch" data-prefix="static/512/04/suitcase">
+<b style="font-family: 'Maison Mono', monospace; padding: 0.2em 0; font-size: 0.9em;">layout:</b>
+<div><code style="--img-bgc: rgb(96,30,39); --img-txc: rgb(255,0,147);" data-val="L0">#1</code></div>
+<div><code style="--img-bgc: rgb(213,183,142); --img-txc: rgb(140,40,139);" data-val="L1" class="selected">#2</code></div>
+<div><code style="--img-bgc: rgb(14,73,49); --img-txc: rgb(255,87,65);" data-val="L2" class>#3</code></div>
+<div><code style="--img-bgc: rgb(61,43,42); --img-txc: rgb(234,224,67
+       );" data-val="L3" class>#4</code></div>
+<div><code data-val="_new0" class>random #1</code></div>
+<div><code data-val="_new1" class>random #2</code></div>
+</div>
+<div class="row px-1 mt-4">
+<div class="col-12 mb-2 prompt" style="text-align: center"><code>“a suitcase, a bowling ball, and a phone
+washed up on a
+beach after a shipwreck”</code></div>
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3"><img id="mixmatch_orig2" src="static/512/04/suitcaseL0A0.jpg" alt></div>
+<div class="col gx-3"><img id="mixmatch_orig" src="static/512/04/suitcaseL1A1.jpg" alt></div>
+<div class="col gx-3"><img id="mixmatch" src="static/512/04/suitcaseL1A0.jpg" alt></div>
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+
+
+
+
+
+</div>
+<div class="row px-1 mt-2" style="            text-align: center;">
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+<div class="col gx-3">Appearance</div>
+<div class="col gx-3">Layout</div>
+<div class="col gx-3">Combined</div>
+<div class="col-lg-1 col-md-1 col-sm-0 col-0 gx-3"></div>
+</div>
+
+
+
+<h5 id="compositional_generation"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Compositional generation</h5>
+<div id="compositional_gen">
+<p> A new scene can be created by collaging individual objects from different images (the first three columns
+here). Alternatively —
+e.g., if objects cannot be combined at their original locations due to incompatibilities in
+these images' layouts (*as in the bottom row) — we can borrow only their appearance, and specify layout with
+a new image to produce a composition (last two columns).</p>
+<div class="row px-1 mt-3">
+<div class="col-12 gx-3 prompt"><code>“a picnic blanket, a fruit tree, and a car by the
+lake”</code></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/blanketsrc.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/treesrc.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/carsrc.jpg" alt></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>blanket</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>tree</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>car</code></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/collagedlake.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/layoutsrc.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/mergednewlayout.jpg" alt></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"><b> Result</b></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"> + Target layout</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"><b> Final result</b></div>
+</div>
+<div class="row subcaptions px-1 mt-2 d-none d-md-flex">
+<div class="col gx-3"> Take <code>blanket</code></div>
+<div class="col gx-3"> Take <code>tree</code></div>
+<div class="col gx-3"> Take <code>car</code></div>
+<div class="col gx-3"><b> Result</b></div>
+<div class="col gx-3"> + Target layout</div>
+<div class="col gx-3"><b> Final result</b></div>
+
+</div>
+<div class="row px-1 mt-3">
+<div class="col-12 gx-3 prompt"><code>“a top-down photo of a tea kettle, a bowl of fruit, and a cup of
+matcha”</code></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/toprightmatcha.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/kettlesrc.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/fruitbowlbl.jpg" alt></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>matcha</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>kettle</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>fruit</code></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/mergedmatcha.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/matchastr.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/matchanewlayout.jpg" alt></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"><b> Result</b></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"> + Target layout</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"><b> Final result</b></div>
+</div>
+<div class="row subcaptions px-1 mt-2 d-none d-md-flex">
+<div class="col gx-3"> Take <code>matcha</code></div>
+<div class="col gx-3"> Take <code>kettle</code></div>
+<div class="col gx-3"> Take <code>fruit</code></div>
+<div class="col gx-3"><b> Result</b></div>
+<div class="col gx-3"> + Target layout</div>
+<div class="col gx-3"><b> Final result</b></div>
+
+</div>
+<div class="row px-1 mt-3">
+<div class="col-12 gx-3 prompt"><code>“a dog wearing a knit sweater and a baseball cap drinking a
+cocktail”</code></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/dogsweater.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/greencocktail.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/graydog.jpg" alt></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>sweater</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>cocktail</code></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 mb-2 d-block d-md-none"> Take <code>cap</code></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/dogcollage.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/doglayout.jpg" alt></div>
+<div class="col-4 col-md gx-3"><img src="static/512/05/dogmerged.jpg" alt></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"><b> Result*</b></div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"> + Target layout</div>
+<div class="col-4 subcaptions col-md gx-3 mt-1 d-block d-md-none"><b> Final result</b></div>
+</div>
+<div class="row subcaptions px-1 mt-2 d-none d-md-flex">
+<div class="col gx-3"> Take <code>sweater</code></div>
+<div class="col gx-3"> Take <code>cocktail</code></div>
+<div class="col gx-3"> Take <code>cap</code></div>
+<div class="col gx-3"><b> Result*</b></div>
+<div class="col gx-3"> + Target layout</div>
+<div class="col gx-3"><b> Final result</b></div>
+
+</div></div>
+<h5 id="non_objects"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Manipulating non-objects</h5>
+<div id="non_objects_container">
+<p> The properties of any word in the input prompt can be
+manipulated, not only nouns. Here, we show examples of relocating adjectives and verbs. The last
+example shows a case in which additional self-guidance can correct improper attribute binding.
+</p>
+<div class="row px-1 mt-4 d-flex d-md-none prompt" style="align-items: center;">
+<div class="col-12 mb-2 gx-3">Move <code>laughing</code> right</div>
+<div class="col-12 gx-3 mb-2"><code>“a cat and a monkey laughing on a road”</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/09/monkey_cat_left.jpg" alt></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/09/monkey_cat_right.jpg" alt></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3 mt-2"> Original</div>
+<div class="col-6 col-sm-5 gx-3 mt-2"> Modified</div>
+<div class="col-0 col-sm-1 gx-3"></div>
+</div>
+<div class="row px-1 mt-4 d-flex d-md-none prompt" style="align-items: center;">
+<div class="col-12 mb-2 gx-3">Change <code>messy</code> location</div>
+<div class="col-12 gx-3 mb-2"><code>“a messy room”</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/09/messyleft.jpg" alt></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/09/messyright.jpg" alt></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3 mt-2"> At <code>(0.3,0.6)</code></div>
+<div class="col-6 col-sm-5 gx-3 mt-2"> At <code>(0.8,0.8)</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+</div>
+<div class="row px-1 mt-4 d-flex d-md-none prompt" style="align-items: center;">
+<div class="col-12 mb-2 gx-3">Move <code>red</code> to jacket, <code>yellow</code> to shoes</div>
+<div class="col-12 gx-3 mb-2"><code>“green hat, blue book, yellow shoes, red jacket”</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/09/colororig.jpg" alt></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/09/colorfixed.jpg" alt></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3 mt-2">Original</div>
+<div class="col-6 col-sm-5 gx-3 mt-2"> Fixed</div>
+<div class="col-0 col-sm-1 gx-3"></div>
+</div>
+<div class="row px-1 mt-3 d-none d-md-flex prompt" style="align-items: center;">
+<div class="col me-3"><code>“a cat and a monkey laughing on a road”</code></div>
+<div class="col me-3"><code>“a messy room”</code></div>
+<div class="col"><code>“green hat, blue book, yellow shoes, red jacket”</code></div>
+</div>
+<div class="row px-1 d-none d-md-flex">
+<div class="col gx-3"><img src="static/512/09/monkey_cat_left.jpg" alt></div>
+<div class="col gx-3 me-3"><img src="static/512/09/monkey_cat_right.jpg" alt></div>
+<div class="col gx-3"><img src="static/512/09/messyleft.jpg" alt></div>
+<div class="col gx-3 me-3"><img src="static/512/09/messyright.jpg" alt></div>
+<div class="col gx-3"><img src="static/512/09/colororig.jpg" alt></div>
+<div class="col gx-3"><img src="static/512/09/colorfixed.jpg" alt></div>
+</div>
+<div class="row subcaptions d-none d-md-flex px-1 mt-1">
+<div class="col gx-3"> Original</div>
+<div class="col gx-3 me-3"> Modified</div>
+<div class="col gx-3"> At <code>(0.3,0.6)</code></div>
+<div class="col gx-3 me-3"> At <code>(0.8,0.8)</code></div>
+<div class="col gx-3"> Original</div>
+<div class="col gx-3"> Fixed</div>
+
+</div>
+<div class="row px-1 mt-1 d-none d-md-flex subcaptions">
+<div class="col me-3">Move <code>laughing</code> right</div>
+<div class="col me-3">Change <code>messy</code> location</div>
+<div class="col">Move <code>red</code> to jacket, <code>yellow</code> to shoes</div>
+</div></div>
+<h5 id="limitations"><span class="me-2 material-symbols-rounded">
+open_with
+</span>Limitations</h5>
+<div id="limitations_container">
+<p> Setting high guidance weights for appearance terms tends to introduce
+unwanted leakage of object position. Similarly, while heavily guiding the shape of one word matches that object’s layout as expected, high guidance on all token shapes leaks appearance information. Finally, in some cases, objects are entangled in attention space, making
+it difficult to control them independently.</p>
+<div class="row px-1 mt-4 d-flex d-md-none prompt" style="align-items: center;">
+<div class="col-12 mb-2 gx-3">Appearance features leak layout</div>
+<div class="col-12 gx-3 mb-2"><code>“a squirrel trying to catch a lime mid-air”</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/10/squirrelsamples%20(1).jpg" alt></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/10/squirrelbadannotated.jpg" alt></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3 mt-2">Unguided</div>
+<div class="col-6 col-sm-5 gx-3 mt-2"><code>lime</code> guided</div>
+<div class="col-0 col-sm-1 gx-3"></div>
+</div>
+<div class="row px-1 mt-4 d-flex d-md-none prompt" style="align-items: center;">
+<div class="col-12 mb-2 gx-3">Multi-token layout leaks appearance</div>
+<div class="col-12 gx-3 mb-2"><code>“a picture of a cake”</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3">
+<div class="squareimg" style="position:relative;">
+<img style="left:0" src="static/512/10/rainbowcake.jpeg" alt>
+</div>
+</div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/10/guidelayoutcake.jpg" alt></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3 mt-2">Real image</div>
+<div class="col-6 col-sm-5 gx-3 mt-2"> Layout guided</div>
+<div class="col-0 col-sm-1 gx-3"></div>
+</div>
+<div class="row px-1 mt-4 d-flex d-md-none prompt" style="align-items: center;">
+<div class="col-12 mb-2 gx-3">Interacting objects are entangled</div>
+<div class="col-12 gx-3 mb-2"><code>“a potato sitting on a couch with a bowl of popcorn watching
+football”</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/10/couchpotatoleft.jpg" alt></div>
+<div class="col-6 col-sm-5 gx-3"><img src="static/512/10/couchpotatoright.jpg" alt></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+<div class="col-6 col-sm-5 gx-3 mt-2">Original</div>
+<div class="col-6 col-sm-5 gx-3 mt-2 pl-0"> Move potato <code style="color: #1f1f1f; padding-left: 0;">&#8594;</code></div>
+<div class="col-0 col-sm-1 gx-3"></div>
+</div>
+<div class="row d-none d-md-flex  px-1 mt-3 prompt" style="align-items: center;">
+<div class="col me-3"><code>“a squirrel trying to catch a lime mid-air”</code></div>
+<div class="col me-3"><code>“a picture of a cake”</code></div>
+<div class="col"><code>“a potato sitting on a couch with a bowl of popcorn watching football”</code>
+</div>
+</div>
+<div class="row d-none d-md-flex px-1">
+<div class="col gx-3"><img src="static/512/10/squirrelsamples%20(1).jpg" alt></div>
+<div class="col gx-3 me-3"><img src="static/512/10/squirrelbadannotated.jpg" alt></div>
+<div class="col gx-3">
+<div class="squareimg" style="position:relative;">
+<img src="static/512/10/rainbowcake.jpeg" alt>
+</div>
+</div>
+<div class="col gx-3 me-3"><img src="static/512/10/guidelayoutcake.jpg" alt></div>
+<div class="col gx-3"><img src="static/512/10/couchpotatoleft.jpg" alt></div>
+<div class="col gx-3"><img src="static/512/10/couchpotatoright.jpg" alt></div>
+</div>
+<div class="row d-none d-md-flex subcaptions px-1 mt-2">
+<div class="col gx-3"> Unguided</div>
+<div class="col gx-3 me-3"><code>lime</code> guided</div>
+<div class="col gx-3"> Real image</div>
+<div class="col gx-3 me-3"> Layout guided</div>
+<div class="col gx-3">Original</div>
+<div class="col gx-3">Move potato <code style="color: #1f1f1f; padding-left: 0;">&#8594;</code></div>
+
+</div>
+<div class="row d-none d-md-flex px-1 mt-1 subcaptions">
+<div class="col me-3">Appearance features leak layout</div>
+<div class="col me-3">Multi-token layout leaks appearance</div>
+<div class="col">Interacting objects are entangled</div>
+</div></div>
+</section>
+<section id="citation">
+<h3 class="mt-5 mt-sm-4 mt-md-5" data-exclude-link="true"><span style="display: inline-flex;
+    align-items: center;" data-bs-toggle="tooltip" data-bs-placement="right" title="Copy BibTex" data-clipboard-target=".cit"><span class="me-2 material-symbols-rounded">
+format_quote
+</span>Citation</span>
+
+</h3>
+<div class="cit_cont">
+<pre class="cit" data-clipboard-target=".cit" data-bs-toggle="tooltip" data-bs-placement="right" title="Copy BibTex">
+@article{epstein2023selfguidance,
+  title={Diffusion Self-Guidance for Controllable Image Generation},
+  author={Epstein, Dave and Jabri, Allan and Poole, Ben and Efros, Alexei A. and Holynski, Aleksander},
+  journal={arXiv preprint arXiv:2306.00986},
+  year={2023}
+}		</pre>
+</div>
+</section>
+<section class="pb-4">
+<h3 class="mt-5 mt-sm-4 mt-md-5" data-exclude-link>
+Acknowledgements
+</h3>
+<p>
+We thank Oliver Wang, Jason Baldridge, Lucy Chai, and Minyoung Huh for their helpful comments. Dave is
+supported by the PD Soros Fellowship. Dave and Allan conducted part of this research at Google, with additional funding provided by DARPA MCS and ONR MURI.
+</p>
+</section>
+</main>
+<script>
+    document.querySelectorAll('h3, h5').forEach(
+        e => {
+            if (e.getAttribute('data-exclude-link') === null) {
+                let el = e;
+                e.innerHTML = `<span style="" class="pe-1">${e.innerHTML}</span>`
+                let link = location.href.replace(location.search, '').replace(location.hash, '') + '#' + e.id;
+                eid = e.id
+                e = e.firstChild
+                e.setAttribute('data-clipboard-text', link)
+                e.setAttribute('data-bs-toggle', 'tooltip')
+                e.setAttribute('data-anchor', eid);
+                e.setAttribute('data-bs-placement', "right")
+                e.setAttribute('title', 'Copy link')
+
+            }
+        }
+    )
+    document.querySelectorAll('ltx').forEach(e => {
+        let txt = e.innerHTML;
+        e.innerHTML = `<img class="ltx" src="https://math.vercel.app?inline=${txt}" alt="${txt}">`;
+    })
+    let clip = new ClipboardJS('[data-clipboard-target],[data-clipboard-text]');
+    clip.on('success', function (e) {
+        if (e.trigger.parentElement.classList.contains('links')) {
+            tooltipList.get(document.getElementById('citelink')).enable();
+            tooltipList.get(document.getElementById('citelink')).show();
+            setTimeout(function () {
+                tooltipList.get(document.getElementById('citelink')).hide();
+                tooltipList.get(document.getElementById('citelink')).disable();
+            }, 2000);
+        } else {
+            let orig = e.trigger.getAttribute('data-bs-original-title');
+            e.trigger.setAttribute('data-bs-original-title', 'Link copied!');
+            tooltipList.get(e.trigger).show();
+            e.clearSelection();
+            if (e.trigger.hasAttribute('data-clipboard-text')) {
+                // jump(e.trigger.getAttribute('data-anchor')); // this one is good - uncomment if functionality is desired
+                // e.trigger.scrollIntoView({behavior: 'smooth'});
+            }
+            setTimeout(function () {
+                e.trigger.setAttribute('data-bs-original-title', orig);
+            }, 2000);
+        }
+    })
+
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = new Map(tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return [tooltipTriggerEl, new bootstrap.Tooltip(tooltipTriggerEl)]
+    }),);
+
+    try {
+        tooltipList.get(document.getElementById('citelink')).disable();
+    } catch (e) {
+
+    }
+  /*  document.querySelectorAll('#results img, .teaser *:not(.insetwrap) > img, .teaser .insetwrap').forEach(e => {
+        e.addEventListener("click", function () {
+            let zoomed = e.classList.contains('zoom');
+            document.querySelectorAll('#results img, .teaser *:not(.insetwrap) > img, .teaser .insetwrap').forEach(ee => {
+                ee.classList.remove('zoom');
+            });
+            if (!zoomed) e.classList.add('zoom');
+        })
+    });
+
+    window.addEventListener('click', function (e) {
+        let imgclick = [...document.querySelectorAll('#results img, .teaser *:not(.insetwrap) > img, .teaser .insetwrap')].map(ee => ee.contains(e.target)).some(x => x);
+        if (!imgclick) {
+            document.querySelectorAll('#results img, .teaser *:not(.insetwrap) > img, .teaser .insetwrap').forEach(ee => {
+                ee.classList.remove('zoom');
+            });
+        }
+    });
+*/
+    document.querySelectorAll('.hoverteaser').forEach(e => {
+        e.addEventListener('mouseover', function () {
+            let tags = ['move', 'resize', 'replace', 'newstyle', 'newlayout'];
+            let tag = e.getAttribute('data-for');
+            tags.forEach(t => {
+                if (t != tag) {
+                    document.querySelectorAll(`.teaser .${t}`).forEach(ee => {
+                        ee.style.opacity = "0.2";
+                    });
+                }
+
+            });
+        });
+        e.addEventListener("mouseout", function () {
+            let tags = ['move', 'resize', 'replace', 'newstyle', 'newlayout'];
+            // let tag = e.getAttribute('data-for');
+            tags.forEach(t => {
+                // if (t != tag) {
+                document.querySelectorAll(`.teaser .${t}`).forEach(ee => {
+                    ee.style.opacity = "1.0";
+                });
+                // }
+
+            });
+        });
+    });
+
+    document.querySelectorAll('.select_prompt code').forEach(e => {
+        e.addEventListener("click", function () {
+            let dad = e.parentElement.parentElement;
+            let tgtid = dad.getAttribute('data-for');
+            let tgt = document.getElementById(tgtid);
+            let orig = document.getElementById(tgtid + '_orig');
+            let orig2 = document.getElementById(tgtid + '_orig2');
+            let origdb = document.getElementById(tgtid + '_origdreambooth');
+            dad.querySelectorAll('code').forEach(e => e.classList.remove('selected'))
+            e.classList.add('selected');
+            let prefixsel = document.querySelector(`.select_prompt[data-for="${tgtid}"][data-prefix]`);
+            let prefix = prefixsel.querySelector('.selected').getAttribute('data-val');
+            let str = prefixsel.getAttribute('data-prefix') + prefix;
+            document.querySelectorAll(`[data-show="${prefix}"]`).forEach(e => {
+                e.style.display = 'block';
+            });
+            document.querySelectorAll(`[data-hide="${prefix}"]`).forEach(e => {
+                e.style.display = 'none';
+                e.classList.remove('selected');
+            });
+            let suffixsel = 0;
+            let suffix = 0;
+            suffixsel = document.querySelector(`.select_prompt[data-for="${tgtid}"][data-suffix][data-show="${prefix}"]`);
+            if (suffixsel !== null) {
+                try {
+                    suffix = suffixsel.querySelector('.selected').getAttribute('data-val');
+                } catch (e) {
+                    suffix = suffixsel.firstElementChild.nextElementSibling.firstElementChild.getAttribute('data-val');
+                    suffixsel.firstElementChild.nextElementSibling.firstElementChild.classList.add('selected');
+                }
+            } else {
+                suffixsel = document.querySelector(`.select_prompt[data-for="${tgtid}"][data-suffix]`);
+                suffix = suffixsel.querySelector('.selected').getAttribute('data-val');
+            }
+            if (suffixsel.querySelector('.selected').hasAttribute('data-hideorig2') && orig2) {
+                orig2.style.display = 'none';
+                orig2.classList.add('hidden');
+            } else if (orig2) {
+                orig2.style.display = 'block';
+                orig2.classList.remove('hidden');
+            }
+            if (orig2) orig2.src = prefixsel.getAttribute('data-prefix') + suffix + 'original' + suffixsel.getAttribute('data-suffix');
+            if (origdb) origdb.src = prefixsel.getAttribute('data-prefix') + 'dreambooth' + suffix + suffixsel.getAttribute('data-suffix');
+            orig.src = str + 'original' + suffixsel.getAttribute('data-suffix');
+            str += suffix + suffixsel.getAttribute('data-suffix');
+            tgt.src = str;
+        });
+    });
+
+</script>
+</body>
+</html>
