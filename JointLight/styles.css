@@ -1296,3 +1296,6 @@ dialog p {
   aspect-ratio: 960 / 1664;
   object-fit: contain;
 }
+
+.projects-home { padding: 8px 24px; font-size: 11px; color: #62716b; border-bottom: 1px solid #d9dfd7; }
+.projects-home a:hover { color: #145a50; }

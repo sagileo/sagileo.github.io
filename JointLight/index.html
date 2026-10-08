@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8f8f3">
+<title>JointLight — Human-Centric Video Relighting</title>
+<meta name="description" content="JointLight: controllable human-centric video relighting with geometry-guided, asynchronous RGB-irradiance joint modeling. SIGGRAPH Asia 2026.">
+<meta property="og:title" content="JointLight | SIGGRAPH Asia 2026">
+<meta property="og:description" content="Geometry guides the light. Joint generation refines the result.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://sagileo.github.io/JointLight/assets/images/teaser.webp">
+<link rel="canonical" href="https://sagileo.github.io/JointLight/">
+<meta property="og:url" content="https://sagileo.github.io/JointLight/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<div class="projects-home"><a href="../">← All projects / 所有项目</a></div>
+<a class="skip" href="#main">Skip to content / 跳至正文</a>
+<header class="site-header"><div class="header-inner">
+<a class="wordmark" href="#top" aria-label="JointLight home"><span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i></span>JointLight<span class="brand-period">.</span></a>
+<nav aria-label="Main navigation / 主导航"><a href="#overview"><span data-lang="en">Overview</span><span data-lang="zh">概览</span></a><a href="#results"><span data-lang="en">Results</span><span data-lang="zh">效果</span></a><a href="#method"><span data-lang="en">Method</span><span data-lang="zh">方法</span></a><a href="#data"><span data-lang="en">Dataset</span><span data-lang="zh">数据</span></a><a href="#evaluation"><span data-lang="en">Evaluation</span><span data-lang="zh">实验</span></a></nav><button id="language" class="language-switch" type="button" aria-label="切换至中文">中文 <span aria-hidden="true">↗</span></button>
+</div></header><main id="main"><section class="hero container" id="top"><div class="venue">
+<span class="status-dot"></span>SIGGRAPH ASIA 2026 <span class="venue-rule"></span> CONFERENCE PAPERS</div>
+<h1>Joint<span>Light</span><span class="title-dot">.</span>
+</h1>
+<div class="paper-title">
+<span data-lang="en">Human-Centric Video Relighting with<br>Asynchronous RGB-Irradiance Joint Modeling</span><span data-lang="zh">基于异步 RGB 与辐照度联合建模的<br>人物视频重光照</span>
+</div>
+<div class="authors">
+<span>Henglei Lv<sup>1</sup></span><span>Bailin Deng<sup>2</sup></span><span>Xiaoqiang Liu<sup>3</sup></span><span>Yichen Wang<sup>1</sup></span><span>Haoxian Zhang<sup>3</sup></span><span>Pengfei Wan<sup>3</sup></span><span>Lin Gao<sup>1,*</sup></span>
+</div>
+<div class="affiliations">
+<span data-lang="en"><span><sup>1</sup> Institute of Computing Technology, Chinese Academy of Sciences &amp; University of Chinese Academy of Sciences</span><span><sup>2</sup> Cardiff University</span><span><sup>3</sup> Kuaishou Technology</span></span><span data-lang="zh"><span><sup>1</sup> 中国科学院计算技术研究所、中国科学院大学</span><span><sup>2</sup> 卡迪夫大学</span><span><sup>3</sup> 快手科技</span></span>
+</div>
+<p class="corresponding"><span data-lang="en">* Corresponding author</span><span data-lang="zh">* 通讯作者</span></p>
+<div class="resource-links">
+<a class="button primary" href="assets/paper/JointLight.pdf" target="_blank" rel="noopener"><span aria-hidden="true">↗</span><span data-lang="en">Paper</span><span data-lang="zh">论文 PDF</span></a><a class="button" href="https://github.com/IGLICT/JointLight" target="_blank" rel="noopener"><span aria-hidden="true">⌘</span> GitHub</a><a class="button" href="#results"><span aria-hidden="true">▷</span><span data-lang="en">Watch results</span><span data-lang="zh">观看效果</span></a><button class="button pending" type="button" disabled><span data-lang="en">Dataset · Coming soon</span><span data-lang="zh">数据集 · 待发布</span></button>
+</div>
+<figure class="hero-figure"><button class="figure-zoom" type="button" data-zoom="assets/images/teaser.webp" aria-label="Enlarge teaser / 放大概览图"><img src="assets/images/teaser.webp" width="2056" height="884" alt="The same input videos relit under two target environment maps; inset images show generated irradiance." fetchpriority="high"><span class="zoom-hint" aria-hidden="true">↗</span></button><figcaption><span data-lang="en">One video. Different light. The same scene.</span><span data-lang="zh">同一段视频，不同的光照，同一个场景。</span><span><span data-lang="en">Joint RGB + irradiance generation</span><span data-lang="zh">RGB 与辐照度联合生成</span></span></figcaption></figure></section><section class="overview container" id="overview"><div class="section-heading">
+<span class="section-index">01</span><h2>
+<span data-lang="en">Light as a controllable part of the scene.</span><span data-lang="zh">让光照成为场景中可控的一部分。</span>
+</h2>
+</div>
+<div class="overview-body">
+<p class="lead"><span data-lang="en">Geometry guides the light.<br>Joint generation refines the result.</span><span data-lang="zh">用几何引导光照，<br>让联合生成修正细节。</span></p>
+<div>
+<p class=""><span data-lang="en">Relighting asks a video model to change how a scene is illuminated while preserving its identity and motion. JointLight turns estimated geometry and target HDR lighting into an explicit irradiance cue, then jointly generates the relit RGB video and a refined irradiance video.</span><span data-lang="zh">重光照要求视频模型在保留场景内容与人物动作的同时，改变环境中的光影关系。JointLight 将估计几何与目标 HDR 光照转化为显式辐照度线索，再联合生成重光照 RGB 视频与精细化辐照度视频。</span></p>
+<p class=""><span data-lang="en">The key is to treat imperfect irradiance as a cue that can be corrected. Asynchronous denoising and domain matching reduce the influence of geometric artifacts while retaining large-scale lighting structure. Relighting fine-tuning uses synthetic data only, with generalization evaluated on real videos and HumanOLAT.</span><span data-lang="zh">关键是让不完美的辐照度参与生成并被逐步修正。异步去噪和域匹配减弱几何伪影的影响，同时保留大尺度光照结构。模型仅使用合成数据进行重光照任务微调，并在真实视频和 HumanOLAT 上验证泛化效果。</span></p>
+</div>
+</div>
+<div class="contributions">
+<article><span class="letter">A</span><h3>
+<span data-lang="en">Geometry-guided control</span><span data-lang="zh">几何引导的控制</span>
+</h3>
+<p class=""><span data-lang="en">Pixel-aligned irradiance from target HDR lighting.</span><span data-lang="zh">由目标 HDR 光照构造与画面对齐的辐照度。</span></p></article><article><span class="letter">B</span><h3>
+<span data-lang="en">Asynchronous joint modeling</span><span data-lang="zh">异步联合建模</span>
+</h3>
+<p class=""><span data-lang="en">RGB and irradiance, with separate denoising schedules.</span><span data-lang="zh">RGB 与辐照度采用独立的去噪进度。</span></p></article><article><span class="letter">C</span><h3>
+<span data-lang="en">Synthetic-to-real transfer</span><span data-lang="zh">从合成走向真实</span>
+</h3>
+<p class=""><span data-lang="en">Diverse paired data and training-time domain matching.</span><span data-lang="zh">以多样化配对数据和域匹配支持迁移。</span></p></article>
+</div></section><section class="results-band" id="results"><div class="container">
+<div class="section-heading">
+<span class="section-index">02</span><h2>
+<span data-lang="en">See the light change.</span><span data-lang="zh">看见光照的变化。</span>
+</h2>
+</div>
+<p class="section-intro"><span data-lang="en">Explore static lighting, rotating illumination, joint irradiance outputs, and more real-world results.</span><span data-lang="zh">查看静态光照对比、旋转光照、联合辐照度输出与更多真实视频结果。</span></p>
+<div class="tabs video-tabs" role="tablist" aria-label="Video examples / 视频示例">
+<button type="button" role="tab" id="video-tab-static" aria-controls="video-panel" aria-selected="true" tabindex="0" data-video="static"><span class="tab-number">01</span><span data-lang="en">Static lighting</span><span data-lang="zh">静态光照</span></button><button type="button" role="tab" id="video-tab-dynamic" aria-controls="video-panel" aria-selected="false" tabindex="-1" data-video="dynamic"><span class="tab-number">02</span><span data-lang="en">Dynamic lighting</span><span data-lang="zh">动态光照</span></button><button type="button" role="tab" id="video-tab-shading" aria-controls="video-panel" aria-selected="false" tabindex="-1" data-video="shading"><span class="tab-number">03</span><span data-lang="en">RGB + irradiance</span><span data-lang="zh">RGB + 辐照度</span></button><button type="button" role="tab" id="video-tab-more" aria-controls="video-panel" aria-selected="false" tabindex="-1" data-video="more"><span class="tab-number">04</span><span data-lang="en">More results</span><span data-lang="zh">更多结果</span></button>
+</div>
+<div id="video-panel" role="tabpanel" aria-labelledby="video-tab-static" tabindex="0">
+<div class="video-frame"><video id="showcase" controls muted playsinline loop preload="metadata" poster="assets/images/01_static_comparison.jpg"><source src="assets/videos/01_static_comparison.mp4" type="video/mp4"><span data-lang="en">Your browser does not support HTML video. Download the clip below.</span><span data-lang="zh">当前浏览器不支持视频播放，请通过下方链接下载。</span></video></div>
+<div class="video-caption">
+<div>
+<h3 id="video-title"></h3>
+<p id="video-description"></p>
+</div>
+<a id="video-download" href="assets/videos/01_static_comparison.mp4" download><span data-lang="en">Download video ↓</span><span data-lang="zh">下载视频 ↓</span></a>
+</div>
+</div>
+<noscript><p>Other videos: <a href="assets/videos/02_dynamic_comparison.mp4">Dynamic lighting</a> · <a href="assets/videos/04_shading.mp4">RGB + irradiance</a> · <a href="assets/videos/03_more_results.mp4">More results</a></p></noscript>
+</div></section><section class="container method" id="method"><div class="section-heading">
+<span class="section-index">03</span><h2>
+<span data-lang="en">Lighting cues that evolve during generation.</span><span data-lang="zh">让光照线索可以被修正。</span>
+</h2>
+</div>
+<p class="section-intro"><span data-lang="en">A coarse geometric proxy knows something about light transport, but its errors should not dictate every pixel.</span><span data-lang="zh">粗糙几何提供了光传输的依据，但其中的误差不应成为最终画面的约束。</span></p>
+<div class="method-step">
+<div class="step-copy">
+<span class="eyebrow">01 / GEOMETRY</span><h3>
+<span data-lang="en">Give light a spatial blueprint.</span><span data-lang="zh">为光照提供空间依据。</span>
+</h3>
+<p class=""><span data-lang="en">We estimate monocular geometry, convert it into a mesh, and render a white diffuse scene under the target environment map with Mitsuba 3. This provides a pixel-aligned irradiance cue.</span><span data-lang="zh">从单目视频估计几何并转换为网格，再用 Mitsuba 3 在目标环境光下渲染白色漫反射场景，构造与画面对齐的辐照度线索。</span></p>
+<p class=""><span data-lang="en">Compared with ground-truth irradiance, coarse cues contain missing boundaries, incorrect shadows, and lost detail. Direct conditioning can transfer these artifacts into the output.</span><span data-lang="zh">相比真值辐照度，粗糙线索包含边界缺失、阴影偏差和细节损失，直接作为条件可能将这些伪影传入结果。</span></p>
+</div>
+<figure><div class="irradiance-triptych">
+<button class="figure-zoom" type="button" data-zoom="assets/images/irradiance-rgb.webp" aria-label="Enlarge figure / 放大图片"><img src="assets/images/irradiance-rgb.webp" alt="Original RGB image" loading="lazy" decoding="async"><span class="zoom-hint" aria-hidden="true">↗</span></button><button class="figure-zoom" type="button" data-zoom="assets/images/irradiance-gt.webp" aria-label="Enlarge figure / 放大图片"><img src="assets/images/irradiance-gt.webp" alt="Ground-truth irradiance" loading="lazy" decoding="async"><span class="zoom-hint" aria-hidden="true">↗</span></button><button class="figure-zoom" type="button" data-zoom="assets/images/irradiance-coarse.webp" aria-label="Enlarge figure / 放大图片"><img src="assets/images/irradiance-coarse.webp" alt="Coarse geometry-derived irradiance" loading="lazy" decoding="async"><span class="zoom-hint" aria-hidden="true">↗</span></button>
+</div>
+<figcaption class="three-labels"><span>RGB</span><span>GT irradiance</span><span>Coarse irradiance</span></figcaption></figure>
+</div>
+<div class="method-wide">
+<div class="wide-copy">
+<div>
+<span class="eyebrow">02 / JOINT MODELING</span><h3>
+<span data-lang="en">Two modalities.<br>Independent noise levels.</span><span data-lang="zh">两种模态，<br>独立的噪声水平。</span>
+</h3>
+</div>
+<p class=""><span data-lang="en">Based on Wan2.2-TI2V-5B, a shared diffusion Transformer models RGB and irradiance jointly. Independent noise timesteps let the model exchange information even when the two modalities are at different denoising stages. A second training stage introduces noisy coarse cues to match the inference distribution.</span><span data-lang="zh">基于 Wan2.2-TI2V-5B，在同一个扩散 Transformer 中联合建模 RGB 与辐照度。独立的噪声时间步让模型在两种模态清晰程度不同时仍能交换信息；第二阶段引入带噪粗糙线索，使训练与推理时的分布更接近。</span></p>
+</div>
+<figure class="paper-figure"><button class="figure-zoom " type="button" data-zoom="assets/images/training.webp" aria-label="Enlarge figure / 放大图片"><img src="assets/images/training.webp" alt="Joint training pipeline with separate noise timesteps for RGB and irradiance." loading="lazy" decoding="async"><span class="zoom-hint" aria-hidden="true">↗</span></button><figcaption><span data-lang="en">Joint training with separate timestep scheduling.</span><span data-lang="zh">采用独立时间步调度的联合训练。</span></figcaption></figure>
+</div>
+<div class="method-wide">
+<div class="wide-copy">
+<div>
+<span class="eyebrow">03 / ASYNCHRONOUS INFERENCE</span><h3>
+<span data-lang="en">Preserve the structure.<br>Refine the details.</span><span data-lang="zh">保留光照结构，<br>共同完善细节。</span>
+</h3>
+</div>
+<p class=""><span data-lang="en">At inference, we add noise to the rendered irradiance cue. The RGB branch denoises first while the cue remains fixed; at 0.6T, both modalities continue denoising together. Noise suppresses high-frequency artifacts, and joint generation refines the final lighting. The same switching point is used for all reported examples.</span><span data-lang="zh">推理时先对渲染得到的辐照度加噪，由 RGB 分支先行去噪，辐照度暂时固定；到 0.6T 时两种模态共同去噪。噪声减弱高频伪影，联合生成进一步修正光照细节。所有报告案例均使用相同切换时间步。</span></p>
+</div>
+<figure class="paper-figure"><button class="figure-zoom " type="button" data-zoom="assets/images/inference.webp" aria-label="Enlarge figure / 放大图片"><img src="assets/images/inference.webp" alt="Asynchronous inference from a noisy geometry-derived irradiance cue." loading="lazy" decoding="async"><span class="zoom-hint" aria-hidden="true">↗</span></button><figcaption><span data-lang="en">From estimated geometry to refined RGB and irradiance.</span><span data-lang="zh">从估计几何到精细化 RGB 与辐照度。</span></figcaption></figure>
+</div></section><section class="data-band" id="data"><div class="container">
+<div class="section-heading">
+<span class="section-index">04</span><h2>
+<span data-lang="en">Built in simulation. Tested in reality.</span><span data-lang="zh">在合成世界学习，在真实影像验证。</span>
+</h2>
+</div>
+<div class="data-top">
+<div><p class=""><span data-lang="en">An Unreal Engine 5 pipeline renders paired RGB and irradiance videos while holding the scene and motion fixed and changing only the illumination. Photorealistic assets and diverse combinations of environments, characters, and motion support transfer to real footage.</span><span data-lang="zh">Unreal Engine 5 管线固定场景与人物动作，仅改变照明，同步渲染配对的 RGB 与辐照度视频。逼真的素材与多样化的环境、角色和动作组合，支持模型向真实影像迁移。</span></p></div>
+<div class="data-big">
+<strong>68,000</strong><span><span data-lang="en">paired training videos</span><span data-lang="zh">配对训练视频</span></span>
+</div>
+</div>
+<dl class="dataset-stats">
+<div>
+<dt>6,800</dt>
+<dd>
+<span data-lang="en">dynamic scenes</span><span data-lang="zh">动态场景</span>
+</dd>
+</div>
+<div>
+<dt>30</dt>
+<dd>
+<span data-lang="en">environments</span><span data-lang="zh">室内外环境</span>
+</dd>
+</div>
+<div>
+<dt>60</dt>
+<dd>
+<span data-lang="en">characters</span><span data-lang="zh">角色</span>
+</dd>
+</div>
+<div>
+<dt>600</dt>
+<dd>
+<span data-lang="en">body animations</span><span data-lang="zh">身体动画</span>
+</dd>
+</div>
+<div>
+<dt>821</dt>
+<dd>
+<span data-lang="en">HDR maps</span><span data-lang="zh">HDR 环境贴图</span>
+</dd>
+</div>
+</dl>
+<figure class="dataset-figure"><button class="figure-zoom " type="button" data-zoom="assets/images/dataset.webp" aria-label="Enlarge figure / 放大图片"><img src="assets/images/dataset.webp" alt="Synthetic environments, characters, animations, and paired RGB / irradiance renderings." loading="lazy" decoding="async"><span class="zoom-hint" aria-hidden="true">↗</span></button><figcaption><span data-lang="en">Diverse assets, paired supervision, and ten lighting conditions per scene.</span><span data-lang="zh">多样化素材、配对监督，每个场景包含十种照明条件。</span></figcaption></figure><div class="benchmark-grid">
+<article><span class="benchmark-dot"></span><h3>SynthStatic</h3>
+<p class=""><span data-lang="en">40 dynamic scenes with fixed target lighting. Tests relighting quality as the subject moves.</span><span data-lang="zh">40 个动态场景，目标环境光保持固定，评估人物运动过程中的重光照质量。</span></p></article><article><span class="benchmark-dot"></span><h3>SynthDynamic</h3>
+<p class=""><span data-lang="en">10 dynamic scenes with rotating target lighting. Tests simultaneous changes in motion and illumination.</span><span data-lang="zh">10 个动态场景，目标环境光随时间旋转，评估运动与照明同时变化时的控制能力。</span></p></article>
+</div>
+<p class="fine-print"><span data-lang="en">Relighting fine-tuning uses synthetic data only. HumanOLAT is used for evaluation, not training. Dataset download: coming soon.</span><span data-lang="zh">重光照任务微调仅使用合成数据。HumanOLAT 用于评估，未参与训练。数据集下载入口待发布。</span></p>
+</div></section><section class="container evaluation" id="evaluation"><div class="section-heading">
+<span class="section-index">05</span><h2>
+<span data-lang="en">Measured beyond appearances.</span><span data-lang="zh">不止于视觉效果的验证。</span>
+</h2>
+</div>
+<p class="section-intro"><span data-lang="en">We measure image fidelity on synthetic videos and real captured images, and assess perceptual quality on in-the-wild videos.</span><span data-lang="zh">我们在合成视频与真实采集图像上评估重光照质量，并通过真实视频用户研究评估感知效果。</span></p>
+<div class="tabs benchmark-tabs" role="tablist" aria-label="Evaluation benchmark / 评估基准">
+<button type="button" role="tab" id="metric-tab-SynthDynamic" aria-controls="metric-panel" aria-selected="true" tabindex="0" data-benchmark="SynthDynamic">SynthDynamic</button><button type="button" role="tab" id="metric-tab-SynthStatic" aria-controls="metric-panel" aria-selected="false" tabindex="-1" data-benchmark="SynthStatic">SynthStatic</button><button type="button" role="tab" id="metric-tab-HumanOLAT" aria-controls="metric-panel" aria-selected="false" tabindex="-1" data-benchmark="HumanOLAT">HumanOLAT</button>
+</div>
+<div id="metric-panel" role="tabpanel" aria-labelledby="metric-tab-SynthDynamic" tabindex="0">
+<p id="benchmark-description"></p>
+<div class="table-scroll"><table>
+<caption class="sr-only" id="benchmark-caption">SynthDynamic relighting evaluation</caption>
+<thead><tr>
+<th scope="col">
+<span data-lang="en">Method</span><span data-lang="zh">方法</span>
+</th>
+<th scope="col">PSNR ↑</th>
+<th scope="col">SSIM ↑</th>
+<th scope="col">LPIPS ↓</th>
+</tr></thead>
+<tbody id="metric-rows">
+<tr>
+<th scope="row">DiffusionRenderer (Cosmos)</th>
+<td>13.48</td>
+<td>0.589</td>
+<td>0.345</td>
+</tr>
+<tr>
+<th scope="row">UniRelight</th>
+<td>14.90</td>
+<td>0.602</td>
+<td>0.303</td>
+</tr>
+<tr class="ours">
+<th scope="row">JointLight</th>
+<td><strong>16.39</strong></td>
+<td><strong>0.631</strong></td>
+<td><strong>0.263</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p id="benchmark-note" class="fine-print"></p>
+</div>
+<p class="fine-print"><span data-lang="en">Selected leading baselines are shown here; the paper includes the full comparison. Bold values are best among the displayed methods. PSNR and SSIM: higher is better. LPIPS: lower is better.</span><span data-lang="zh">此处展示主要对比方法，完整结果见论文。粗体表示所列方法中的最优值。PSNR、SSIM 越高越好，LPIPS 越低越好。</span></p>
+<div class="study-row">
+<div>
+<span class="eyebrow">IN-THE-WILD USER STUDY</span><h3>
+<span data-lang="en">Closer to the intended light.</span><span data-lang="zh">更贴近目标光照。</span>
+</h3>
+<p class=""><span data-lang="en">13 participants rated 15 indoor and outdoor videos on a 1–5 scale. JointLight achieved the highest mean scores among evaluated methods for both visual quality and lighting fidelity.</span><span data-lang="zh">13 名参与者对 15 个室内外视频案例进行 1–5 分评分。JointLight 在参与比较的方法中获得最高的视觉质量与光照保真度平均分。</span></p>
+</div>
+<div class="study-number">
+<strong>3.98<small>/ 5</small></strong><span><span data-lang="en">Visual quality</span><span data-lang="zh">视觉质量</span></span>
+</div>
+<div class="study-number">
+<strong>4.53<small>/ 5</small></strong><span><span data-lang="en">Lighting fidelity</span><span data-lang="zh">光照保真度</span></span>
+</div>
+</div>
+<details class="technical-details"><summary><span data-lang="en">Ablations, runtime &amp; scope</span><span data-lang="zh">消融实验、运行时间与适用范围</span></summary><div class="details-grid">
+<div>
+<h3>
+<span data-lang="en">Why joint modeling matters</span><span data-lang="zh">联合建模为何有效</span>
+</h3>
+<p class=""><span data-lang="en">Ablations use the same 6K-step training budget. Direct irradiance conditioning reaches 14.10 dB PSNR, while the full method with asynchronous scheduling and domain matching reaches 15.69 dB. Joint modeling alone does not bridge the gap between coarse and ground-truth irradiance.</span><span data-lang="zh">消融模型使用相同的 6K 步训练预算。直接辐照度条件的 PSNR 为 14.10 dB，加入异步调度与域匹配的完整方法达到 15.69 dB。仅使用联合建模仍不足以弥合粗糙辐照度与真值之间的差距。</span></p>
+</div>
+<div>
+<h3>
+<span data-lang="en">Current scope</span><span data-lang="zh">当前适用范围</span>
+</h3>
+<p class=""><span data-lang="en">The full pipeline takes about 223 seconds for 81 frames at 832 × 480, using 50 sampling steps on one GPU. Processing is offline. Severe geometry errors and strongly specular materials remain challenging; see the paper for limitations.</span><span data-lang="zh">单 GPU、81 帧、832 × 480 分辨率与 50 步采样设置下，完整流程约需 223 秒，属于离线处理。严重几何误差与强镜面反射材质仍具有挑战，详见论文讨论。</span></p>
+</div>
+</div></details></section><section class="citation-band" id="citation"><div class="container">
+<div class="citation-top">
+<div class="section-heading">
+<span class="section-index">06</span><h2>
+<span data-lang="en">Citation</span><span data-lang="zh">引用</span>
+</h2>
+</div>
+<div>
+<a href="citation.bib" download class="text-link">BibTeX ↓</a><button id="copy-citation" class="button" type="button"><span data-lang="en">Copy BibTeX</span><span data-lang="zh">复制 BibTeX</span></button>
+</div>
+</div>
+<pre><code id="bibtex">@inproceedings{lv2026jointlight,
+  title     = {JointLight: Human-Centric Video Relighting with
+               Asynchronous RGB-Irradiance Joint Modeling},
+  author    = {Lv, Henglei and Deng, Bailin and Liu, Xiaoqiang and
+               Wang, Yichen and Zhang, Haoxian and Wan, Pengfei and Gao, Lin},
+  booktitle = {SIGGRAPH Asia 2026 Conference Papers},
+  year      = {2026},
+  publisher = {Association for Computing Machinery},
+  doi       = {10.1145/3829340.3842252}
+}</code></pre>
+<p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+</div></section></main><footer class="container"><a class="wordmark" href="#top">JointLight<span class="brand-period">.</span></a><p><span data-lang="en">Geometry-guided light. Generative possibilities.</span><span data-lang="zh">以几何引导光照，以生成拓展可能。</span></p>
+<a href="mailto:gaolin@ict.ac.cn"><span data-lang="en">Contact</span><span data-lang="zh">联系作者</span> ↗</a></footer><dialog id="figure-dialog"><div class="dialog-toolbar">
+<span><span data-lang="en">Figure detail</span><span data-lang="zh">图片详情</span></span><button id="close-figure" type="button" aria-label="Close figure / 关闭图片">×</button>
+</div>
+<img id="full-figure" alt=""><p><span data-lang="en">Press Esc or click outside the image to close.</span><span data-lang="zh">按 Esc 或点击图片外部关闭。</span></p></dialog>
+</body>
+</html>
