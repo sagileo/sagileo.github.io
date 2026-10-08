@@ -32,4 +32,4 @@ Open http://127.0.0.1:8000/ and follow the project links. Keep each project's as
 - `projects/*/index.html`: redirects for links to the old directories.
 - `404.html`: project navigation for missing pages.
 
-GSHeadRelight paper/arXiv links are currently marked “coming soon” because the supplied page did not contain destinations.
+GSHeadRelight’s Paper button links to the published ACM paper: https://dl.acm.org/doi/10.1145/3721238.3730614.
