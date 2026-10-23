@@ -1,0 +1,2 @@
+Paper and GitHub icons: Font Awesome Free, from the bundled static/js/fontawesome.all.min.js (see its license header; icons CC BY 4.0).
+arXiv icon: Simple Icons, CC0-1.0, https://github.com/simple-icons/simple-icons/blob/develop/icons/arxiv.svg
