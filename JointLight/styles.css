@@ -1330,3 +1330,6 @@ dialog p {
   flex: 0 0 20px;
 }
 .resource-links .resource-link:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+/* Match the monochrome ACM Digital Library mark to the button label. */
+.resource-link .acm-dl-icon { filter: brightness(0) invert(1); }
